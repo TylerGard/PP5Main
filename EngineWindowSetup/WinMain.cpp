@@ -137,9 +137,8 @@ void WindowClass::start(HWND window, int width, int height) {
 	
 	ID3D11Buffer * newVertexBuffer = nullptr;
 	ID3D11Buffer * newIndexBuffer = nullptr;
-	pipelineState->buffer.push_back(newVertexBuffer);
-	pipelineState->indexBuffer.push_back(newIndexBuffer);
-	for (int i = 0; i < pipelineState->buffer.size(); i++) {
+	
+	//for (int i = 0; i < pipelineState->buffer.size(); i++) {
 		D3D11_BUFFER_DESC bufferDesc;
 		ZeroMemory(&bufferDesc, sizeof(bufferDesc));
 		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
@@ -147,7 +146,7 @@ void WindowClass::start(HWND window, int width, int height) {
 		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-		device->CreateBuffer(&bufferDesc, NULL, &(pipelineState->buffer[i]));
+		device->CreateBuffer(&bufferDesc, NULL, &(pipelineState->buffer));
 
 
 		//D3D11_MAPPED_SUBRESOURCE mappedSubresource;
@@ -161,7 +160,7 @@ void WindowClass::start(HWND window, int width, int height) {
 		vertexBufferData.SysMemSlicePitch = 0;
 
 		CD3D11_BUFFER_DESC bufferDescVector(sizeof(VertexPosColor)*vertices.size(), D3D11_BIND_VERTEX_BUFFER);
-		device->CreateBuffer(&bufferDescVector, &vertexBufferData, &pipelineState->buffer[i]);
+		device->CreateBuffer(&bufferDescVector, &vertexBufferData, &pipelineState->buffer);
 		D3D11_BUFFER_DESC bufferDescIndices;
 		ZeroMemory(&bufferDescIndices, sizeof(bufferDescIndices));
 		bufferDescIndices.Usage = D3D11_USAGE_DYNAMIC;
@@ -169,15 +168,57 @@ void WindowClass::start(HWND window, int width, int height) {
 		bufferDescIndices.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		bufferDescIndices.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-		device->CreateBuffer(&bufferDescIndices, NULL, &pipelineState->indexBuffer[i]);
+		device->CreateBuffer(&bufferDescIndices, NULL, &pipelineState->indexBuffer);
 
 		D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
 		indexBufferData.pSysMem = &index[0];
 		indexBufferData.SysMemPitch = 0;
 		indexBufferData.SysMemSlicePitch = 0;
 		CD3D11_BUFFER_DESC bufferDescriptionIndex(sizeof(int)*index.size(), D3D11_BIND_INDEX_BUFFER);
-		device->CreateBuffer(&bufferDescriptionIndex, &indexBufferData, &pipelineState->indexBuffer[i]);
-	}
+		device->CreateBuffer(&bufferDescriptionIndex, &indexBufferData, &pipelineState->indexBuffer);
+
+
+		//Start Bone////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		D3D11_BUFFER_DESC boneBufferDesc;
+		ZeroMemory(&boneBufferDesc, sizeof(boneBufferDesc));
+		boneBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		boneBufferDesc.ByteWidth = sizeof(VertexPosColor) * boneVertices.size();
+		boneBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		boneBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		device->CreateBuffer(&boneBufferDesc, NULL, &(pipelineState->boneVertexBuffer));
+
+
+		//D3D11_MAPPED_SUBRESOURCE mappedSubresource;
+		//deviceContext->Map(pipelineState->buffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &mappedSubresource);
+		//memcpy(mappedSubresource.pData, vertexes, sizeof(vertexes));
+		//deviceContext->Unmap(pipelineState->buffer, NULL);
+
+		D3D11_SUBRESOURCE_DATA boneVertexBufferData = { 0 };
+		boneVertexBufferData.pSysMem = &boneVertices[0];
+		boneVertexBufferData.SysMemPitch = 0;
+		boneVertexBufferData.SysMemSlicePitch = 0;
+
+		CD3D11_BUFFER_DESC boneBufferDescVector(sizeof(VertexPosColor)*boneVertices.size(), D3D11_BIND_VERTEX_BUFFER);
+		device->CreateBuffer(&boneBufferDescVector, &boneVertexBufferData, &pipelineState->boneVertexBuffer);
+		D3D11_BUFFER_DESC boneBufferDescIndices;
+		ZeroMemory(&boneBufferDescIndices, sizeof(boneBufferDescIndices));
+		boneBufferDescIndices.Usage = D3D11_USAGE_DYNAMIC;
+		boneBufferDescIndices.ByteWidth = sizeof(int)*index.size();
+		boneBufferDescIndices.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		boneBufferDescIndices.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		device->CreateBuffer(&boneBufferDescIndices, NULL, &pipelineState->boneIndexBuffer);
+
+		D3D11_SUBRESOURCE_DATA boneIndexBufferData = { 0 };
+		boneIndexBufferData.pSysMem = &index[0];
+		boneIndexBufferData.SysMemPitch = 0;
+		boneIndexBufferData.SysMemSlicePitch = 0;
+		CD3D11_BUFFER_DESC boneBufferDescriptionIndex(sizeof(int)*index.size(), D3D11_BIND_INDEX_BUFFER);
+		device->CreateBuffer(&boneBufferDescriptionIndex, &boneIndexBufferData, &pipelineState->boneIndexBuffer);
+		//End Bone////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//	}
 	//lines
 
 	/*VertexPosColor lines[] =
@@ -252,9 +293,9 @@ void WindowClass::start(HWND window, int width, int height) {
 
 WindowClass::~WindowClass() {
 	//take care of the pipelineState first
-	for (int i = 0; i < pipelineState->buffer.size(); i++) {
-		ReleaseIfExists(pipelineState->buffer[i]);
-	}
+//	for (int i = 0; i < pipelineState->buffer.size(); i++) {
+		ReleaseIfExists(pipelineState->buffer);
+//	}
 	ReleaseIfExists(pipelineState->depthStencilBuffer);
 	ReleaseIfExists(pipelineState->depthStencilState);
 	ReleaseIfExists(pipelineState->depthStencilView);
@@ -314,12 +355,20 @@ void WindowClass::Render() {
 
 	UINT stride = sizeof(VertexPosColor);
 	UINT offset = 0;
-	for (int i = 0; i < pipelineState->buffer.size(); i++) {
-		deviceContext->IASetVertexBuffers(0, 1, &pipelineState->buffer[i], &stride, &offset);
-		deviceContext->IASetIndexBuffer(pipelineState->indexBuffer[i], DXGI_FORMAT_R32_UINT, 0);
-		deviceContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		deviceContext->DrawIndexed(index.size(), 0, 0);
-	}
+//	for (int i = 0; i < pipelineState->buffer.size(); i++) {
+		/*deviceContext->IASetVertexBuffers(0, 1, &pipelineState->buffer, &stride, &offset);*/
+		deviceContext->IASetIndexBuffer(pipelineState->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		/*deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		deviceContext->DrawIndexed(index.size(), 0, 0);*/
+
+		//for(int i = 0; i < )
+		 stride = sizeof(VertexPosColor);
+		 offset = 0;
+		deviceContext->IASetVertexBuffers(0, 1, &pipelineState->boneVertexBuffer, &stride, &offset);
+		//deviceContext->IASetIndexBuffer(pipelineState->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		deviceContext->DrawIndexed(boneVertices.size(), 0, 0);
+//	}
 	/*deviceContext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
 	deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 	deviceContext->IASetVertexBuffers(0, 1, &lineBuffer, &stride, &offset);

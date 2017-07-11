@@ -18,10 +18,10 @@ struct pipeline_state_t {
 	ID3D11DepthStencilView *depthStencilView;
 	ID3D11RasterizerState *rasterState;
 	ID3D11RasterizerState *debugRasterState;
-	std::vector<ID3D11Buffer*> buffer;
-	std::vector<ID3D11Buffer*> indexBuffer;
-
-	std::vector<ID3D11Buffer*> boneVertexBuffer;
+	ID3D11Buffer* buffer;
+	ID3D11Buffer* indexBuffer;
+	ID3D11Buffer * boneVertexBuffer;
+	ID3D11Buffer * boneIndexBuffer;
 };
 
 struct ModelViewProjectionConstantBuffer {

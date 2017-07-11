@@ -43,6 +43,21 @@ void FbxToDirectX() {
 
 		windowClass.vertices.push_back(temp);
 	}
+
+	std::vector<xyzw> vertexST = fbxDLLAPI.getBoneVertex();
+	for (int i = 0; i < fbxDLLAPI.getBoneVertex().size(); i++) {
+		VertexPosColor temp;
+		temp.Position.x = vertexST[i].x;
+		temp.Position.y = vertexST[i].y;
+		temp.Position.z = vertexST[i].z;
+		//temp.Position.w = 1.0;
+		temp.Color.x = 1.0f;
+		temp.Color.y = 0.0f;
+		temp.Color.z = 0.0f;
+		temp.Color.w = 1.0f;
+
+		windowClass.boneVertices.push_back(temp);
+	}
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
