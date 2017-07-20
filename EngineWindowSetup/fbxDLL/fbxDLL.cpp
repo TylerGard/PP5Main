@@ -77,7 +77,7 @@ namespace fbxNS
 		printf("<attribute type='%s' name='%s'/>\n", typeName.Buffer(), attrName.Buffer());
 	}
 
-	void loadVertices(FbxNode* pNode) {
+	void loadVertices(FbxNode* pNode, meshCollection &RmeshCollection) {
 		FbxMesh* meshData = pNode->GetMesh();
 		int num = meshData->GetControlPointsCount();
 
@@ -90,14 +90,14 @@ namespace fbxNS
 			temp.position[1] = hold.mData[1];
 			temp.position[2] = hold.mData[2];
 			temp.position[3] = hold.mData[3];
-			verts.push_back(temp);
+			RmeshCollection.verts.push_back(temp);
 		}
 
 		int polygonNum = meshData->GetPolygonCount();
 
 		for (int i = 0; i < polygonNum; i++) {
 			for (int j = 0; j < 3; j++) {
-				indices.push_back(meshData->GetPolygonVertex(i, j));
+				RmeshCollection.indices.push_back(meshData->GetPolygonVertex(i, j));
 			}
 		}
 	}
@@ -105,7 +105,7 @@ namespace fbxNS
 	/**
 	* Print a node, its attributes, and all its children recursively.
 	*/
-	void PrintNode(FbxNode* pNode) {
+	void PrintNode(FbxNode* pNode, meshCollection & RmeshCollection) {
 		PrintTabs();
 		const char* nodeName = pNode->GetName();
 
@@ -122,7 +122,7 @@ namespace fbxNS
 				rotation[0], rotation[1], rotation[2],
 				scaling[0], scaling[1], scaling[2]
 			);
-			loadVertices(pNode);
+			loadVertices(pNode, RmeshCollection);
 			numTabs++;
 		}
 
@@ -132,7 +132,7 @@ namespace fbxNS
 
 		// Recursively print the children.
 		for (int j = 0; j < pNode->GetChildCount(); j++)
-			PrintNode(pNode->GetChild(j));
+			PrintNode(pNode->GetChild(j), RmeshCollection);
 
 		numTabs--;
 		PrintTabs();
@@ -140,7 +140,7 @@ namespace fbxNS
 	}
 
 	FbxNode *printBone(FbxNode* pNode, std::vector<FbxNode*> &vector) {
-
+		int yourmomthree = pNode->GetChildCount();
 		for (int j = 0; j < pNode->GetChildCount(); j++)
 		{
 			if (pNode->GetChild(j) != nullptr)
@@ -151,11 +151,17 @@ namespace fbxNS
 		return pNode;
 	}
 	void startPrintBone(FbxNode* pNode, std::vector<fbxJoint> &vector) {
+
 		std::vector<FbxNode*> nodeVector;
-		nodeVector.push_back(printBone(pNode->GetChild(0),nodeVector));
+
+		nodeVector.push_back(printBone(pNode,nodeVector));
+
 		for (int i = 0; i < nodeVector.size(); i++) {
+
 			fbxJoint tempJoint;
+
 			tempJoint.node = nodeVector[i];
+
 			vector.push_back(tempJoint);
 		}
 	}
@@ -163,7 +169,8 @@ namespace fbxNS
 	* Main function - loads the hard-coded fbx file,
 	* and prints its contents in an xml format to stdout.
 	*/
-	void fbxFunctions::ProcessStuff() {
+	void fbxFunctions::ProcessStuff(meshCollection & theCollection, float scalevalue) {
+		
 		int poseCount = lScene->GetPoseCount();
 		FbxPose *posePointer;
 		for (int i = 0; i < poseCount; i++)
@@ -202,16 +209,28 @@ namespace fbxNS
 		}
 
 		std::vector<fbxJoint> tempVector;
-		for (int i = 0; i < jointVector.size(); i++) {
-			int tempIndex;
-			
-			for (int j = 0; j < jointVector.size(); j++) {
-				tempIndex = jointVector[j].parent_index;
-				if (tempIndex == i) {
-					//tempVector.push_back(jointVector[i]);
-					tempVector.push_back(jointVector[j]);
+		//for (int i = 0; i < jointVector.size(); i++) {
+		//	int tempIndex;
+		//	
+		//	for (int j = 0; j < jointVector.size(); j++) {
+		//		tempIndex = jointVector[j].parent_index;
+		//		if (tempIndex == i) {
+		//			//tempVector.push_back(jointVector[i]);
+		//			tempVector.push_back(jointVector[j]);
 
-				}
+		//		}
+		//	}
+		//}
+		tempVector.push_back(jointVector[0]);
+		tempVector.push_back(jointVector[jointVector[0].parent_index]);
+		for (int i = 0; i < jointVector.size(); i++)
+		{
+			int tempIndex = jointVector[i].parent_index;
+			if (tempIndex > 0)
+			{
+				tempVector.push_back(jointVector[i]);
+				tempVector.push_back(jointVector[tempIndex]);
+				
 			}
 		}
 		jointVector = tempVector;
@@ -226,23 +245,20 @@ namespace fbxNS
 			mainJoint.jXYZW.x = (float)pos.mData[0];
 			mainJoint.jXYZW.y = (float)pos.mData[1];
 			mainJoint.jXYZW.z = (float)pos.mData[2];
-			mainJoint.jXYZW.w = 1.0f;
+			mainJoint.jXYZW.w = (float)pos.mData[3];
 
 			mainJoint.jMatrix.e00 = (float)matrix.Get(0, 0);
 			mainJoint.jMatrix.e01 = (float)matrix.Get(0, 1);
 			mainJoint.jMatrix.e02 = (float)matrix.Get(0, 2);
 			mainJoint.jMatrix.e03 = (float)matrix.Get(0, 3);
-
 			mainJoint.jMatrix.e10 = (float)matrix.Get(1, 0);
 			mainJoint.jMatrix.e11 = (float)matrix.Get(1, 1);
 			mainJoint.jMatrix.e12 = (float)matrix.Get(1, 2);
 			mainJoint.jMatrix.e13 = (float)matrix.Get(1, 3);
-
 			mainJoint.jMatrix.e20 = (float)matrix.Get(2, 0);
 			mainJoint.jMatrix.e21 = (float)matrix.Get(2, 1);
 			mainJoint.jMatrix.e22 = (float)matrix.Get(2, 2);
 			mainJoint.jMatrix.e23 = (float)matrix.Get(2, 3);
-
 			mainJoint.jMatrix.e30 = (float)matrix.Get(3, 0);
 			mainJoint.jMatrix.e31 = (float)matrix.Get(3, 1);
 			mainJoint.jMatrix.e32 = (float)matrix.Get(3, 2);
@@ -252,7 +268,7 @@ namespace fbxNS
 
 			lMesh = &tMesh;
 
-			boneVerticesX.push_back(mainJoint.jXYZW);
+			theCollection.boneVerticesX.push_back(mainJoint.jXYZW);
 		}
 		
 		//boneIndices.push_back()
@@ -266,7 +282,7 @@ namespace fbxNS
 
 		// Change the following filename to a suitable filename value.
 		const char* lFilename = "BM.fbx";
-
+		const char* lFilenameTwo = "Teddy_Idle.fbx";
 		// Initialize the SDK manager. This object handles all our memory management.
 		lSdkManager = FbxManager::Create();
 
@@ -296,16 +312,49 @@ namespace fbxNS
 		// Print the nodes of the scene and their attributes recursively.
 		// Note that we are not printing the root node because it should
 		// not contain any attributes.
+		meshCollection mageCollection;
 		lRootNode = lScene->GetRootNode();
 		if (lRootNode) {
 			for (int i = 0; i < lRootNode->GetChildCount(); i++)
-				PrintNode(lRootNode->GetChild(i));
+				PrintNode(lRootNode->GetChild(i), mageCollection);
 		}
 
 		
-		ProcessStuff();
+		ProcessStuff(mageCollection, 1.0f);
 		
+		meshColVector.push_back(mageCollection);
 
+
+
+	lImporter = FbxImporter::Create(lSdkManager, "");
+	if (!lImporter->Initialize(lFilenameTwo, -1, lSdkManager->GetIOSettings())) {
+		printf("Call to FbxImporter::Initialize() failed.\n");
+		printf("Error returned: %s\n\n", lImporter->GetStatus().GetErrorString());
+		exit(-1);
+	}
+	
+	
+	lScene = FbxScene::Create(lSdkManager, "mySceneTwo");
+	// Import the contents of the file into the scene.
+	lImporter->Import(lScene);
+	
+	// The file is imported; so get rid of the importer.
+	lImporter->Destroy();
+	
+	// Print the nodes of the scene and their attributes recursively.
+	// Note that we are not printing the root node because it should
+	// not contain any attributes.
+	meshCollection teddyCollection;
+	lRootNode = lScene->GetRootNode();
+	if (lRootNode) {
+		for (int i = 0; i < lRootNode->GetChildCount(); i++)
+			PrintNode(lRootNode->GetChild(i), teddyCollection);
+	}
+	
+	
+	ProcessStuff(teddyCollection, 0.2f);
+	
+	meshColVector.push_back(teddyCollection);
 		// Destroy the SDK manager and all the other objects it was handling.
 		lSdkManager->Destroy();
 	}

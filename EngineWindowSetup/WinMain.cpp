@@ -90,59 +90,90 @@ void WindowClass::start(HWND window, int width, int height) {
 	viewport.TopLeftY = 0;
 	deviceContext->RSSetViewports(1, &viewport);
 
-	//pipelineState
-	pipelineState = new pipeline_state_t();
-
-	//debug stuff
-	D3D11_RASTERIZER_DESC rastDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT());
-
-	rastDesc.FillMode = D3D11_FILL_SOLID;
-	rastDesc.CullMode = D3D11_CULL_BACK;
-	device->CreateRasterizerState(&rastDesc, &(pipelineState->rasterState));
+	for (int j = 0; j < 2; j++)
+	{
 
 
-	rastDesc.FillMode = D3D11_FILL_WIREFRAME;
-	rastDesc.CullMode = D3D11_CULL_NONE;
-	device->CreateRasterizerState(&rastDesc, &(pipelineState->debugRasterState));
+		//pipelineState
+		pipeline_state_t * pipelineState = new pipeline_state_t();
 
-	//pixel shader
-	char *pixelData;
-	long pixelSize;
-	readFile("Trivial_PS.cso", pixelData, pixelSize);
-	device->CreatePixelShader(pixelData, pixelSize, NULL, &pipelineState->pixel_shader);
-	free(pixelData);
+		//debug stuff
+		D3D11_RASTERIZER_DESC rastDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT());
 
-	//vertex shader
-	char *vertexData;
-	long vertexSize;
-	readFile("Trivial_VS.cso", vertexData, vertexSize);
-	device->CreateVertexShader(vertexData, vertexSize, NULL, &pipelineState->vertex_shader);
+		rastDesc.FillMode = D3D11_FILL_SOLID;
+		rastDesc.CullMode = D3D11_CULL_BACK;
+		device->CreateRasterizerState(&rastDesc, &(pipelineState->rasterState));
 
-	D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	};
 
-	device->CreateInputLayout(inputElementDesc, 2, vertexData, vertexSize, &pipelineState->input_layout);
-	free(vertexData);
+		rastDesc.FillMode = D3D11_FILL_WIREFRAME;
+		rastDesc.CullMode = D3D11_CULL_NONE;
+		device->CreateRasterizerState(&rastDesc, &(pipelineState->debugRasterState));
 
-	deviceContext->IASetInputLayout(pipelineState->input_layout);
-	//triangle
-	/*VertexPosColor vertexes[] = {
-		{ XMFLOAT3(0.0f, 0.5f, 0.0f),XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3(0.45f, -0.5, 0.0f),XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
-		{ XMFLOAT3(-0.45f, -0.5f, 0.0f),XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) }
-	};
-*/
-	
-	ID3D11Buffer * newVertexBuffer = nullptr;
-	ID3D11Buffer * newIndexBuffer = nullptr;
-	
-	//for (int i = 0; i < pipelineState->buffer.size(); i++) {
+		//pixel shader
+		char *pixelData;
+		long pixelSize;
+		readFile("Trivial_PS.cso", pixelData, pixelSize);
+		device->CreatePixelShader(pixelData, pixelSize, NULL, &pipelineState->pixel_shader);
+		free(pixelData);
+
+		//vertex shader
+		char *vertexData;
+		long vertexSize;
+		readFile("Trivial_VS.cso", vertexData, vertexSize);
+		device->CreateVertexShader(vertexData, vertexSize, NULL, &pipelineState->vertex_shader);
+
+		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+
+		device->CreateInputLayout(inputElementDesc, 2, vertexData, vertexSize, &pipelineState->input_layout);
+		free(vertexData);
+
+		deviceContext->IASetInputLayout(pipelineState->input_layout);
+		//triangle
+		/*VertexPosColor vertexes[] = {
+			{ XMFLOAT3(0.0f, 0.5f, 0.0f),XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
+			{ XMFLOAT3(0.45f, -0.5, 0.0f),XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+			{ XMFLOAT3(-0.45f, -0.5f, 0.0f),XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) }
+		};
+	*/
+
+		ID3D11Buffer * newVertexBuffer = nullptr;
+		ID3D11Buffer * newIndexBuffer = nullptr;
+
+		D3D11_BUFFER_DESC gbufferDesc;
+		ZeroMemory(&gbufferDesc, sizeof(gbufferDesc));
+		gbufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		gbufferDesc.ByteWidth = sizeof(VertexPosColor) * 6;
+		gbufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		gbufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		device->CreateBuffer(&gbufferDesc, NULL, &(pipelineState->groundBuffer));
+
+		std::vector<VertexPosColor> groundVerts;
+		groundVerts.push_back({ XMFLOAT3(1.0f,0.0f,-1.0f),XMFLOAT4(0.5f,0.25f,0.0f,1.0f) });
+		groundVerts.push_back({ XMFLOAT3(-1.0f,0.0f,-1.0f),XMFLOAT4(0.5f,0.25f,0.0f,1.0f) });
+		groundVerts.push_back({ XMFLOAT3(-1.0f,0.0f, 1.0f),XMFLOAT4(0.5f,0.25f,0.0f,1.0f) });
+		groundVerts.push_back({ XMFLOAT3(-1.0f,0.0f, 1.0f),XMFLOAT4(0.5f,0.25f,0.0f,1.0f) });
+		groundVerts.push_back({ XMFLOAT3(1.0f,0.0f, 1.0f),XMFLOAT4(0.5f,0.25f,0.0f,1.0f) });
+		groundVerts.push_back({ XMFLOAT3(1.0f,0.0f,-1.0f),XMFLOAT4(0.5f,0.25f,0.0f,1.0f) });
+
+		D3D11_MAPPED_SUBRESOURCE mappedSubresource;
+		deviceContext->Map(pipelineState->groundBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &mappedSubresource);
+		memcpy(mappedSubresource.pData, groundVerts.data(), sizeof(VertexPosColor)*groundVerts.size());
+		deviceContext->Unmap(pipelineState->groundBuffer, NULL);
+
+		//D3D11_MAPPED_SUBRESOURCE mappedSubresource;
+		//deviceContext->Map(pipelineState->buffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &mappedSubresource);
+		//memcpy(mappedSubresource.pData, vertexes, sizeof(vertexes));
+		//deviceContext->Unmap(pipelineState->buffer, NULL);
+
+		//for (int i = 0; i < pipelineState->buffer.size(); i++) {
 		D3D11_BUFFER_DESC bufferDesc;
 		ZeroMemory(&bufferDesc, sizeof(bufferDesc));
 		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		bufferDesc.ByteWidth = sizeof(VertexPosColor) * vertices.size();
+		bufferDesc.ByteWidth = sizeof(VertexPosColor) * vertices[j].size();
 		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
@@ -155,26 +186,26 @@ void WindowClass::start(HWND window, int width, int height) {
 		//deviceContext->Unmap(pipelineState->buffer, NULL);
 
 		D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-		vertexBufferData.pSysMem = &vertices[0];
+		vertexBufferData.pSysMem = &vertices[j][0];
 		vertexBufferData.SysMemPitch = 0;
 		vertexBufferData.SysMemSlicePitch = 0;
 
-		CD3D11_BUFFER_DESC bufferDescVector(sizeof(VertexPosColor)*vertices.size(), D3D11_BIND_VERTEX_BUFFER);
+		CD3D11_BUFFER_DESC bufferDescVector(sizeof(VertexPosColor)*vertices[j].size(), D3D11_BIND_VERTEX_BUFFER);
 		device->CreateBuffer(&bufferDescVector, &vertexBufferData, &pipelineState->buffer);
 		D3D11_BUFFER_DESC bufferDescIndices;
 		ZeroMemory(&bufferDescIndices, sizeof(bufferDescIndices));
 		bufferDescIndices.Usage = D3D11_USAGE_DYNAMIC;
-		bufferDescIndices.ByteWidth = sizeof(int)*index.size();
+		bufferDescIndices.ByteWidth = sizeof(int)*index[j].size();
 		bufferDescIndices.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		bufferDescIndices.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 		device->CreateBuffer(&bufferDescIndices, NULL, &pipelineState->indexBuffer);
 
 		D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
-		indexBufferData.pSysMem = &index[0];
+		indexBufferData.pSysMem = &index[j][0];
 		indexBufferData.SysMemPitch = 0;
 		indexBufferData.SysMemSlicePitch = 0;
-		CD3D11_BUFFER_DESC bufferDescriptionIndex(sizeof(int)*index.size(), D3D11_BIND_INDEX_BUFFER);
+		CD3D11_BUFFER_DESC bufferDescriptionIndex(sizeof(int)*index[j].size(), D3D11_BIND_INDEX_BUFFER);
 		device->CreateBuffer(&bufferDescriptionIndex, &indexBufferData, &pipelineState->indexBuffer);
 
 
@@ -183,7 +214,7 @@ void WindowClass::start(HWND window, int width, int height) {
 		D3D11_BUFFER_DESC boneBufferDesc;
 		ZeroMemory(&boneBufferDesc, sizeof(boneBufferDesc));
 		boneBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		boneBufferDesc.ByteWidth = sizeof(VertexPosColor) * boneVertices.size();
+		boneBufferDesc.ByteWidth = sizeof(VertexPosColor) * boneVertices[j].size();
 		boneBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		boneBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
@@ -196,11 +227,11 @@ void WindowClass::start(HWND window, int width, int height) {
 		//deviceContext->Unmap(pipelineState->buffer, NULL);
 
 		D3D11_SUBRESOURCE_DATA boneVertexBufferData = { 0 };
-		boneVertexBufferData.pSysMem = &boneVertices[0];
+		boneVertexBufferData.pSysMem = &boneVertices[j][0];
 		boneVertexBufferData.SysMemPitch = 0;
 		boneVertexBufferData.SysMemSlicePitch = 0;
 
-		CD3D11_BUFFER_DESC boneBufferDescVector(sizeof(VertexPosColor)*boneVertices.size(), D3D11_BIND_VERTEX_BUFFER);
+		CD3D11_BUFFER_DESC boneBufferDescVector(sizeof(VertexPosColor)*boneVertices[j].size(), D3D11_BIND_VERTEX_BUFFER);
 		device->CreateBuffer(&boneBufferDescVector, &boneVertexBufferData, &pipelineState->boneVertexBuffer);
 		D3D11_BUFFER_DESC boneBufferDescIndices;
 		ZeroMemory(&boneBufferDescIndices, sizeof(boneBufferDescIndices));
@@ -209,14 +240,14 @@ void WindowClass::start(HWND window, int width, int height) {
 		boneBufferDescIndices.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		boneBufferDescIndices.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-		device->CreateBuffer(&boneBufferDescIndices, NULL, &pipelineState->boneIndexBuffer);
+		/*device->CreateBuffer(&boneBufferDescIndices, NULL, &pipelineState->boneIndexBuffer);
 
 		D3D11_SUBRESOURCE_DATA boneIndexBufferData = { 0 };
 		boneIndexBufferData.pSysMem = &index[0];
 		boneIndexBufferData.SysMemPitch = 0;
 		boneIndexBufferData.SysMemSlicePitch = 0;
 		CD3D11_BUFFER_DESC boneBufferDescriptionIndex(sizeof(int)*index.size(), D3D11_BIND_INDEX_BUFFER);
-		device->CreateBuffer(&boneBufferDescriptionIndex, &boneIndexBufferData, &pipelineState->boneIndexBuffer);
+		device->CreateBuffer(&boneBufferDescriptionIndex, &boneIndexBufferData, &pipelineState->boneIndexBuffer);*/
 		//End Bone////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //	}
 	//lines
@@ -246,68 +277,70 @@ void WindowClass::start(HWND window, int width, int height) {
 
 	//camera
 
-	CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
-	device->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
+		CD3D11_BUFFER_DESC constantBufferDesc(sizeof(ModelViewProjectionConstantBuffer), D3D11_BIND_CONSTANT_BUFFER);
+		device->CreateBuffer(&constantBufferDesc, nullptr, &constantBuffer);
 
-	static const XMVECTORF32 eyePos = { 10.5f, 10.5f, -2.f, 0.f };
-	static const XMVECTORF32 focusPos = { .0f, -.1f, 0.f, 0.f };
-	static const XMVECTORF32 upDir = { .0f, 1.f, 0.f, 0.f };
-	XMMATRIX focus = XMMatrixLookAtLH(eyePos, focusPos, upDir);
-	XMStoreFloat4x4(&constantBufferData.view, XMMatrixTranspose(focus));
-	XMStoreFloat4x4(&constantBufferData.projection, XMMatrixTranspose(XMMatrixPerspectiveFovLH(70.0f * XM_PI / 180.0f, float(width) / height, 0.01f, 100.0f)));
-	XMStoreFloat4x4(&constantBufferData.model, XMMatrixTranspose(XMMatrixIdentity()));
+		static const XMVECTORF32 eyePos = { 10.5f, 10.5f, -2.f, 0.f };
+		static const XMVECTORF32 focusPos = { .0f, -.1f, 0.f, 0.f };
+		static const XMVECTORF32 upDir = { .0f, 1.f, 0.f, 0.f };
+		XMMATRIX focus = XMMatrixLookAtLH(eyePos, focusPos, upDir);
+		XMStoreFloat4x4(&constantBufferData.view, XMMatrixTranspose(focus));
+		XMStoreFloat4x4(&constantBufferData.projection, XMMatrixTranspose(XMMatrixPerspectiveFovLH(70.0f * XM_PI / 180.0f, float(width) / height, 0.01f, 100.0f)));
+		XMStoreFloat4x4(&constantBufferData.model, XMMatrixTranspose(XMMatrixIdentity()));
 
-	//depth
+		//depth
 
-	D3D11_TEXTURE2D_DESC textureDesc;
-	ZeroMemory(&textureDesc, sizeof(textureDesc));
-	textureDesc.Width = width;
-	textureDesc.Height = height;
-	textureDesc.MipLevels = 1;
-	textureDesc.ArraySize = 1;
-	textureDesc.SampleDesc.Count = 1;
-	textureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+		D3D11_TEXTURE2D_DESC textureDesc;
+		ZeroMemory(&textureDesc, sizeof(textureDesc));
+		textureDesc.Width = width;
+		textureDesc.Height = height;
+		textureDesc.MipLevels = 1;
+		textureDesc.ArraySize = 1;
+		textureDesc.SampleDesc.Count = 1;
+		textureDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		textureDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 
-	ID3D11Texture2D *texture2D;
-	HRESULT result = device->CreateTexture2D(&textureDesc, NULL, &texture2D);
+		ID3D11Texture2D *texture2D;
+		HRESULT result = device->CreateTexture2D(&textureDesc, NULL, &texture2D);
 
-	if (result != S_OK)
-		exit(1);
+		if (result != S_OK)
+			exit(1);
 
-	D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
-	ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
-	depthStencilViewDesc.Format = textureDesc.Format;
-	depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
+		D3D11_DEPTH_STENCIL_VIEW_DESC depthStencilViewDesc;
+		ZeroMemory(&depthStencilViewDesc, sizeof(depthStencilViewDesc));
+		depthStencilViewDesc.Format = textureDesc.Format;
+		depthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMS;
 
-	result = device->CreateDepthStencilView(texture2D, &depthStencilViewDesc, &(pipelineState->depthStencilView));
-	texture2D->Release();
+		result = device->CreateDepthStencilView(texture2D, &depthStencilViewDesc, &(pipelineState->depthStencilView));
+		texture2D->Release();
 
-	if (result != S_OK)
-		exit(2);
+		if (result != S_OK)
+			exit(2);
 
-	deviceContext->OMSetRenderTargets(1, &renderTargetView, pipelineState->depthStencilView);
+		deviceContext->OMSetRenderTargets(1, &renderTargetView, pipelineState->depthStencilView);
+		pipelineStates.push_back(pipelineState);
+	}
 }
 
 #define ReleaseIfExists(x) if(x) x->Release()
 
 WindowClass::~WindowClass() {
 	//take care of the pipelineState first
-//	for (int i = 0; i < pipelineState->buffer.size(); i++) {
-		ReleaseIfExists(pipelineState->buffer);
-//	}
-	ReleaseIfExists(pipelineState->depthStencilBuffer);
-	ReleaseIfExists(pipelineState->depthStencilState);
-	ReleaseIfExists(pipelineState->depthStencilView);
-	ReleaseIfExists(pipelineState->input_layout);
-	ReleaseIfExists(pipelineState->rasterState);
-	ReleaseIfExists(pipelineState->debugRasterState);
-	ReleaseIfExists(pipelineState->render_target);
-	ReleaseIfExists(pipelineState->pixel_shader);
-	ReleaseIfExists(pipelineState->vertex_shader);
+	for (int i = 0; i < pipelineStates.size(); i++) {
+		ReleaseIfExists(pipelineStates[i]->buffer);
+		ReleaseIfExists(pipelineStates[i]->depthStencilBuffer);
+		ReleaseIfExists(pipelineStates[i]->depthStencilState);
+		ReleaseIfExists(pipelineStates[i]->depthStencilView);
+		ReleaseIfExists(pipelineStates[i]->input_layout);
+		ReleaseIfExists(pipelineStates[i]->rasterState);
+		ReleaseIfExists(pipelineStates[i]->debugRasterState);
+		ReleaseIfExists(pipelineStates[i]->render_target);
+		ReleaseIfExists(pipelineStates[i]->pixel_shader);
+		ReleaseIfExists(pipelineStates[i]->vertex_shader);
 
-	delete pipelineState;
-
+		//delete pipelineState;
+		pipelineStates.erase(pipelineStates.begin() + i);
+	}
 	//now work with the rest
 	ReleaseIfExists(lineBuffer);
 	ReleaseIfExists(constantBuffer);
@@ -321,60 +354,80 @@ WindowClass::~WindowClass() {
 void WindowClass::Render() {
 	if (GetActiveWindow() != hWND)
 		return;
-
-	if (GetAsyncKeyState(VK_SPACE))
+	for (int j = 0; j < pipelineStates.size(); j++)
 	{
-		XMMATRIX model = XMLoadFloat4x4(&constantBufferData.model);
-		XMMATRIX trans = XMMatrixTranslation(
-			(float)(rand()) / RAND_MAX * 2.0f - 1.0f,
-			(float)(rand()) / RAND_MAX * 2.0f - 1.0f,
-			(float)(rand()) / RAND_MAX * 2.0f - 1.0f
-		);
+		pipeline_state_t * pipelineState = pipelineStates[j];
 
-		XMMATRIX rotX;
-		XMMATRIX rotY;
-		XMMATRIX rotZ;
-		rotX = XMMatrixRotationX((float)(rand()) / RAND_MAX * 2.0f * XM_PI);
-		rotY = XMMatrixRotationY((float)(rand()) / RAND_MAX * 2.0f * XM_PI);
-		rotZ = XMMatrixRotationZ((float)(rand()) / RAND_MAX * 2.0f * XM_PI);
-		model = rotX * rotY * rotZ * trans;
-		XMStoreFloat4x4(&constantBufferData.model, XMMatrixTranspose(model));
+		deviceContext->ClearDepthStencilView(pipelineState->depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+		deviceContext->ClearRenderTargetView(renderTargetView, DirectX::Colors::Black);
+		deviceContext->PSSetShader(pipelineState->pixel_shader, NULL, 0);
+		deviceContext->VSSetShader(pipelineState->vertex_shader, NULL, 0);
+		deviceContext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
+		deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
 	}
+	for (int j = 0; j < pipelineStates.size(); j++)
+	{
+		pipeline_state_t * pipelineState = pipelineStates[j];
+
+		if (GetAsyncKeyState(VK_SPACE))
+		{
+			XMMATRIX model = XMLoadFloat4x4(&constantBufferData.model);
+			XMMATRIX trans = XMMatrixTranslation(
+				(float)(rand()) / RAND_MAX * 2.0f - 1.0f,
+				(float)(rand()) / RAND_MAX * 2.0f - 1.0f,
+				(float)(rand()) / RAND_MAX * 2.0f - 1.0f
+			);
+
+			XMMATRIX rotX;
+			XMMATRIX rotY;
+			XMMATRIX rotZ;
+			rotX = XMMatrixRotationX((float)(rand()) / RAND_MAX * 2.0f * XM_PI);
+			rotY = XMMatrixRotationY((float)(rand()) / RAND_MAX * 2.0f * XM_PI);
+			rotZ = XMMatrixRotationZ((float)(rand()) / RAND_MAX * 2.0f * XM_PI);
+			model = rotX * rotY * rotZ * trans;
+			XMStoreFloat4x4(&constantBufferData.model, XMMatrixTranspose(model));
+		}
+
+		if (debugWires)
+			deviceContext->RSSetState(pipelineState->debugRasterState);
+		else
+			deviceContext->RSSetState(pipelineState->rasterState);
+
 	
-	if (debugWires)
-		deviceContext->RSSetState(pipelineState->debugRasterState);
-	else
-		deviceContext->RSSetState(pipelineState->rasterState);
 
-	deviceContext->ClearDepthStencilView(pipelineState->depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-	deviceContext->ClearRenderTargetView(renderTargetView, DirectX::Colors::Black);
-	deviceContext->PSSetShader(pipelineState->pixel_shader, NULL, 0);
-	deviceContext->VSSetShader(pipelineState->vertex_shader, NULL, 0);
-	deviceContext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
-	deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
-
-	UINT stride = sizeof(VertexPosColor);
-	UINT offset = 0;
-//	for (int i = 0; i < pipelineState->buffer.size(); i++) {
-		/*deviceContext->IASetVertexBuffers(0, 1, &pipelineState->buffer, &stride, &offset);*/
+		UINT stride = sizeof(VertexPosColor);
+		UINT offset = 0;
+		//	for (int i = 0; i < pipelineState->buffer.size(); i++) {
+		deviceContext->IASetVertexBuffers(0, 1, &pipelineState->buffer, &stride, &offset);
 		deviceContext->IASetIndexBuffer(pipelineState->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
-		/*deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		deviceContext->DrawIndexed(index.size(), 0, 0);*/
+		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		deviceContext->DrawIndexed(index[j].size(), 0, 0);
+
+		deviceContext->IASetVertexBuffers(0, 1, &pipelineState->groundBuffer, &stride, &offset);
+		//deviceContext->IASetIndexBuffer(pipelineState->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		deviceContext->Draw(index[j].size(), 0);
+
+		//deviceContext->IASetVertexBuffers(0, 1, &pipelineState->debugBuffer, &stride, &offset);
+		//deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
+		//deviceContext->Draw(linesVector.size(), 0);
 
 		//for(int i = 0; i < )
-		 stride = sizeof(VertexPosColor);
-		 offset = 0;
+		stride = sizeof(VertexPosColor);
+		offset = 0;
 		deviceContext->IASetVertexBuffers(0, 1, &pipelineState->boneVertexBuffer, &stride, &offset);
 		//deviceContext->IASetIndexBuffer(pipelineState->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		deviceContext->DrawIndexed(boneVertices.size(), 0, 0);
-//	}
-	/*deviceContext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
-	deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
-	deviceContext->IASetVertexBuffers(0, 1, &lineBuffer, &stride, &offset);
-	deviceContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
-	deviceContext->Draw(6, 0);*/
+		deviceContext->Draw(boneVertices[j].size(), 0);
+		//	}
+			/*deviceContext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
+			deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+			deviceContext->IASetVertexBuffers(0, 1, &lineBuffer, &stride, &offset);
+			deviceContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_LINELIST);
+			deviceContext->Draw(6, 0);*/
 
+		
+	}
 	swapChain->Present(0, 0);
 }
 
@@ -426,11 +479,48 @@ void WindowClass::debugSwitch()
 }
 
 void WindowClass::addToBuffer(VertexPosColor VPC) {
-	boneVertices.push_back(VPC);
+//	boneVertices.push_back(VPC);
 
 	
 }
 
 void WindowClass::clearBuffer() {
-	boneVertices.clear();
+//	boneVertices.clear();
+}
+
+void WindowClass::addLine(VertexPosColor vertOne, VertexPosColor vertTwo )
+{
+	int index = 0;
+	linesVector.push_back(vertOne);
+	linesVector.push_back(vertTwo);
+	
+	if (linesVector.capacity() > pipelineStates[index]->debugBufferSize)
+	{
+		if (pipelineStates[index]->debugBuffer)
+		{
+			pipelineStates[index]->debugBuffer->Release();
+		}
+
+		D3D11_BUFFER_DESC bufferDesc;
+		ZeroMemory(&bufferDesc, sizeof(bufferDesc));
+		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		bufferDesc.ByteWidth = sizeof(VertexPosColor) * linesVector.capacity();
+		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		pipelineStates[index]->debugBufferSize = linesVector.capacity();
+
+		device->CreateBuffer(&bufferDesc, NULL, &(pipelineStates[index]->debugBuffer));
+		assert(pipelineStates[index]->debugBuffer);
+	}
+
+	D3D11_MAPPED_SUBRESOURCE mappedSubresource;
+	deviceContext->Map(pipelineStates[index]->debugBuffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &mappedSubresource);
+	memcpy(mappedSubresource.pData, linesVector.data(), sizeof(VertexPosColor)*linesVector.size());
+	deviceContext->Unmap(pipelineStates[index]->debugBuffer, NULL);
+}
+
+void WindowClass::clearDebugBuffer()
+{
+	linesVector.clear();
 }

@@ -28,47 +28,87 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 void FbxToDirectX() {
-	windowClass.index = fbxDLLAPI.getIndices();
-	std::vector<fbxNS::vertex> vertexS = fbxDLLAPI.getVertex();
-	for (int i = 0; i < fbxDLLAPI.getVertex().size(); i++) {
-		VertexPosColor temp;
-		temp.Position.x = vertexS[i].position[0];
-		temp.Position.y = vertexS[i].position[1];
-		temp.Position.z = vertexS[i].position[2];
-		//temp.Position.w = 1.0;
-		temp.Color.x = 0.0f;
-		temp.Color.y = 0.0f;
-		temp.Color.z = 1.0f;
-		temp.Color.w = 1.0f;
+	
+	
+	for (int x = 0; x < fbxDLLAPI.getMeshCollection().size(); x++)
+	{
+		 meshCollection theCollection;
+		theCollection = fbxDLLAPI.getMeshCollection()[x];
 
-		windowClass.vertices.push_back(temp);
-	}
+		std::vector<VertexPosColor> vertsVector;
+		std::vector<int> indiciesVector = theCollection.indices;
+		std::vector<VertexPosColor> boneVertsVector;
+	
+		windowClass.index.push_back(indiciesVector);
 
-	std::vector<xyzw> vertexST = fbxDLLAPI.getBoneVertex();
-	for (int i = 0; i < fbxDLLAPI.getBoneVertex().size(); i++) {
-		VertexPosColor temp;
-		temp.Position.x = vertexST[i].x;
-		temp.Position.y = vertexST[i].y;
-		temp.Position.z = vertexST[i].z;
-		//temp.Position.w = 1.0;
-		temp.Color.x = 1.0f;
-		temp.Color.y = 0.0f;
-		temp.Color.z = 0.0f;
-		temp.Color.w = 1.0f;
+		
+		std::vector<extern vertex> vertexS = theCollection.verts;
+		for (int i = 0; i < theCollection.verts.size(); i++) {
+			VertexPosColor temp;
+			temp.Position.x = vertexS[i].position[0];
+			temp.Position.y = vertexS[i].position[1];
+			temp.Position.z = vertexS[i].position[2];
+			//temp.Position.w = 1.0;
+			temp.Color.x = 0.2f;
+			temp.Color.y = 0.2f;
+			temp.Color.z = 0.5f;
+			temp.Color.w = 1.0f;
 
-		windowClass.boneVertices.push_back(temp);
+			vertsVector.push_back(temp);
+			
+			
+		}
+		windowClass.vertices.push_back(vertsVector);
+
+
+		std::vector<xyzw> vertexST = theCollection.boneVerticesX;
+		for (int i = 0; i < theCollection.boneVerticesX.size(); i++) {
+			VertexPosColor temp;
+			temp.Position.x = vertexST[i].x;
+			temp.Position.y = vertexST[i].y;
+			temp.Position.z = vertexST[i].z;
+			//temp.Position.w = 1.0;
+			temp.Color.x = 1.0f;
+			temp.Color.y = 1.0f;
+			temp.Color.z = 1.0f;
+			temp.Color.w = 1.0f;
+
+			boneVertsVector.push_back(temp);
+
+			VertexPosColor tempX = temp;
+			tempX.Position.x += .1;
+			tempX.Color.y = 0.0f;
+			tempX.Color.z = 0.0f;
+			VertexPosColor tempY = temp;
+			tempY.Position.y += .1;
+			tempY.Color.x = 0.0f;
+			tempY.Color.z = 0.0f;
+			VertexPosColor tempZ = temp;
+			tempZ.Position.z += .1;
+			tempZ.Color.y = 0.0f;
+			tempZ.Color.x = 0.0f;
+
+			boneVertsVector.push_back(tempX);
+			boneVertsVector.push_back(temp);
+			boneVertsVector.push_back(tempY);
+			boneVertsVector.push_back(temp);
+			boneVertsVector.push_back(tempZ);
+			boneVertsVector.push_back(temp);
+		}
+
+		windowClass.boneVertices.push_back(boneVertsVector);
 	}
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPWSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
+	_In_opt_ HINSTANCE hPrevInstance,
+	_In_ LPWSTR    lpCmdLine,
+	_In_ int       nCmdShow)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
 
-    // TODO: Place code here.
+	// TODO: Place code here.
 #ifndef NDEBUG
 	AllocConsole();
 	FILE* new_std_in_out;
@@ -76,32 +116,32 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	freopen_s(&new_std_in_out, "CONIN$", "r", stdin);
 #endif
 	fbxDLLAPI.initializeFBX();
-	
-    // Initialize global strings
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_ENGINEWINDOWSETUP, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
 
-    // Perform application initialization:
-    if (!InitInstance(hInstance, nCmdShow))
-    {
-        return FALSE;
-    }
+	// Initialize global strings
+	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+	LoadStringW(hInstance, IDC_ENGINEWINDOWSETUP, szWindowClass, MAX_LOADSTRING);
+	MyRegisterClass(hInstance);
+
+	// Perform application initialization:
+	if (!InitInstance(hInstance, nCmdShow))
+	{
+		return FALSE;
+	}
 	FbxToDirectX();
 
 	windowClass.start(hWnd, windowWidth, windowHeight);
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ENGINEWINDOWSETUP));
+	HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_ENGINEWINDOWSETUP));
 
-    MSG msg;
+	MSG msg;
 	std::chrono::time_point<std::chrono::system_clock> lastnow;
 	lastnow = std::chrono::system_clock::now();
 	float time = 0;
 	float deltaTime = 0;
 
-    // Main message loop:
+	// Main message loop:
 	bool run = true;
-    while (run)
-    {
+	while (run)
+	{
 		deltaTime = (float)(std::chrono::system_clock::now() - lastnow).count() / 1e7f;
 		time += deltaTime;
 		while (PeekMessageA(&msg, NULL, 0U, 0U, PM_REMOVE))
@@ -114,7 +154,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 				run = false;
 			}
 		}
-		
+
 		if (GetKeyState(VK_RBUTTON) < 0)
 		{
 			POINT point;
@@ -138,14 +178,25 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			windowClass.debugSwitch();
 		}
 
-		windowClass.Render();
-    }
+		//int i = 0;
+		for (int i = -5; i <= 5; i++) {
+			VertexPosColor vertOne = { XMFLOAT3((float)i,0.0f,5.0f),XMFLOAT4(0.0f,1.0f,0.0f,1.0f) };
+			VertexPosColor vertTne = { XMFLOAT3((float)i,0.0f,-5.0f),XMFLOAT4(0.0f,1.0f,0.0f,1.0f) };
+			windowClass.addLine(vertOne, vertTne);
+			VertexPosColor vertThne = { XMFLOAT3(5.0,0.0f,(float)i),XMFLOAT4(0.0f,1.0f,0.0f,1.0f) };
+			VertexPosColor vertFne = { XMFLOAT3(-5.0,0.0f,(float)i),XMFLOAT4(0.0f,1.0f,0.0f,1.0f) };
+			windowClass.addLine(vertThne, vertFne);
+		}
 
-	
+		windowClass.Render();
+		windowClass.clearDebugBuffer();
+	}
+
+
 
 
 	//delete windowClass;
-    return (int) msg.wParam;
+	return (int)msg.wParam;
 }
 
 
@@ -157,23 +208,23 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
-    WNDCLASSEXW wcex;
+	WNDCLASSEXW wcex;
 
-    wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.cbSize = sizeof(WNDCLASSEX);
 
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ENGINEWINDOWSETUP));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_ENGINEWINDOWSETUP);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = hInstance;
+	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ENGINEWINDOWSETUP));
+	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_ENGINEWINDOWSETUP);
+	wcex.lpszClassName = szWindowClass;
+	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-    return RegisterClassExW(&wcex);
+	return RegisterClassExW(&wcex);
 }
 
 //
@@ -188,20 +239,20 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   hInst = hInstance; // Store instance handle in our global variable
+	hInst = hInstance; // Store instance handle in our global variable
 
-   hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME ^ WS_MAXIMIZEBOX,
-      CW_USEDEFAULT, 0, windowWidth, windowHeight, nullptr, nullptr, hInstance, nullptr);
+	hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME ^ WS_MAXIMIZEBOX,
+		CW_USEDEFAULT, 0, windowWidth, windowHeight, nullptr, nullptr, hInstance, nullptr);
 
-   if (!hWnd)
-   {
-      return FALSE;
-   }
+	if (!hWnd)
+	{
+		return FALSE;
+	}
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
 
-   return TRUE;
+	return TRUE;
 }
 
 //
@@ -216,58 +267,58 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    switch (message)
-    {
-    case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
-            EndPaint(hWnd, &ps);
-        }
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-    return 0;
+	switch (message)
+	{
+	case WM_COMMAND:
+	{
+		int wmId = LOWORD(wParam);
+		// Parse the menu selections:
+		switch (wmId)
+		{
+		case IDM_ABOUT:
+			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			break;
+		case IDM_EXIT:
+			DestroyWindow(hWnd);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+	}
+	break;
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+		// TODO: Add any drawing code that uses hdc here...
+		EndPaint(hWnd, &ps);
+	}
+	break;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
 }
 
 // Message handler for about box.
 INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
 
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
 }

@@ -28,22 +28,28 @@ struct meshStruct {
 	int indexCount;
 };
 
-namespace fbxNS {
-	struct vertex {
-		float position[4];
-		float color[4];
-	};
+struct vertex {
+	float position[4];
+	float color[4];
+};
+
+struct meshCollection {
 	std::vector<vertex> verts;
 	std::vector<int> indices;
 	std::vector<xyzw> boneVerticesX;
-	class fbxFunctions 
+};
+
+namespace fbxNS {
+	std::vector<meshCollection> meshColVector;
+	class fbxFunctions
 	{
 	public:
-		fbxDLL_API std::vector<vertex> getVertex() { return verts; }
+		/*fbxDLL_API std::vector<vertex> getVertex() { return verts; }
 		fbxDLL_API std::vector<int> getIndices() { return indices; }
-		fbxDLL_API std::vector<xyzw> getBoneVertex() { return boneVerticesX; }
+		fbxDLL_API std::vector<xyzw> getBoneVertex() { return boneVerticesX; }*/
+		static fbxDLL_API std::vector<meshCollection> & getMeshCollection(){ return meshColVector; };
 		static fbxDLL_API void initializeFBX();
-		static fbxDLL_API void ProcessStuff();
+		static fbxDLL_API void ProcessStuff(meshCollection & theCollection, float scalevalue);
 		static fbxDLL_API meshStruct *getMesh();
 		static fbxDLL_API int returnInt();
 	};

@@ -22,6 +22,12 @@ struct pipeline_state_t {
 	ID3D11Buffer* indexBuffer;
 	ID3D11Buffer * boneVertexBuffer;
 	ID3D11Buffer * boneIndexBuffer;
+
+	ID3D11Buffer * debugBuffer = nullptr;
+	size_t debugBufferSize = 0;
+
+	ID3D11Buffer * groundBuffer = nullptr;
+	
 };
 
 struct ModelViewProjectionConstantBuffer {
@@ -35,8 +41,10 @@ struct VertexPosColor {
 };
 
 class WindowClass {
+	std::vector<VertexPosColor> linesVector;
 	HWND hWND;
-	pipeline_state_t *pipelineState;
+	std::vector<pipeline_state_t *> pipelineStates;
+	//pipeline_state_t *pipelineState;
 	ID3D11Device *device;
 	ID3D11DeviceContext *deviceContext;
 	IDXGISwapChain *swapChain = nullptr;
@@ -56,9 +64,17 @@ public:
 	void Render();
 	void debugSwitch();
 	void UpdateMouse(float delta, float x, float y);
-	std::vector<VertexPosColor> vertices;
-	std::vector<int> index;
-	std::vector<VertexPosColor> boneVertices;
+	//std::vector<VertexPosColor >vertices;
+	//std::vector<int> index;
+	//std::vector<VertexPosColor> boneVertices;
+
+	std::vector<std::vector<VertexPosColor> >vertices;
+	std::vector<std::vector<int>> index;
+	std::vector<std::vector<VertexPosColor>> boneVertices;
 	void addToBuffer(VertexPosColor VPC);
 	void clearBuffer();
+	
+	void addLine(VertexPosColor vertOne, VertexPosColor vertTwo);
+
+	void clearDebugBuffer();
 };

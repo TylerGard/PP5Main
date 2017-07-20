@@ -1,0 +1,11 @@
+﻿  fbxDLL.cpp
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(89): warning C4244: '=': conversion from 'fbxsdk::FbxDouble' to 'float', possible loss of data
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(90): warning C4244: '=': conversion from 'fbxsdk::FbxDouble' to 'float', possible loss of data
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(91): warning C4244: '=': conversion from 'fbxsdk::FbxDouble' to 'float', possible loss of data
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(92): warning C4244: '=': conversion from 'fbxsdk::FbxDouble' to 'float', possible loss of data
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(159): warning C4018: '<': signed/unsigned mismatch
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(200): warning C4018: '<': signed/unsigned mismatch
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(203): warning C4018: '<': signed/unsigned mismatch
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(226): warning C4018: '<': signed/unsigned mismatch
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(239): warning C4018: '<': signed/unsigned mismatch
+  fbxDLL.vcxproj -> E:\!!!ENGINE DEV\PP5\EngineWindowSetup\Debug\fbxDLL.dll
