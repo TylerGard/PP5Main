@@ -52,7 +52,7 @@ void FbxToDirectX() {
 			//temp.Position.w = 1.0;
 			temp.Color.x = vertexS[i].U;
 			temp.Color.y = vertexS[i].V;
-			temp.Color.z = 0.0f;
+			temp.Color.z = 1.0f;
 			temp.Color.w = 1.0f;
 
 		// vertsVector.push_back(temp);

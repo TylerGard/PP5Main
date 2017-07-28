@@ -1,2 +1,12 @@
-﻿     Creating library E:\!!!ENGINE DEV\PP5\EngineWindowSetup\Debug\fbxDLL.lib and object E:\!!!ENGINE DEV\PP5\EngineWindowSetup\Debug\fbxDLL.exp
+﻿  fbxDLL.cpp
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(91): warning C4244: '=': conversion from 'fbxsdk::FbxDouble' to 'float', possible loss of data
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(92): warning C4244: '=': conversion from 'fbxsdk::FbxDouble' to 'float', possible loss of data
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(93): warning C4244: '=': conversion from 'fbxsdk::FbxDouble' to 'float', possible loss of data
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(94): warning C4244: '=': conversion from 'fbxsdk::FbxDouble' to 'float', possible loss of data
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(174): warning C4018: '<': signed/unsigned mismatch
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(215): warning C4018: '<': signed/unsigned mismatch
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(218): warning C4018: '<': signed/unsigned mismatch
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(241): warning C4018: '<': signed/unsigned mismatch
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(297): warning C4244: 'initializing': conversion from 'fbxsdk::FbxLongLong' to 'fbxsdk::FbxLong', possible loss of data
+e:\!!!engine dev\pp5\enginewindowsetup\fbxdll\fbxdll.cpp(305): warning C4018: '<': signed/unsigned mismatch
   fbxDLL.vcxproj -> E:\!!!ENGINE DEV\PP5\EngineWindowSetup\Debug\fbxDLL.dll

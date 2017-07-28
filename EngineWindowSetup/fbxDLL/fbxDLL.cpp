@@ -98,13 +98,17 @@ namespace fbxNS
 		
 
 		int polygonNum = meshData->GetPolygonCount();
-
+		float * uvPointer = nullptr;
+		const char * uvName = nullptr;
+		FbxStringList uvNames;
+		meshData->GetUVSetNames(uvNames);
+		uvName = uvNames[0];
 		for (int i = 0; i < polygonNum; i++) {
 			for (int j = 0; j < 3; j++) {
 				RmeshCollection.indices.push_back(meshData->GetPolygonVertex(i, j));
 				int uvIndex = meshData->GetPolygonVertex(i, j);
 				FbxVector2 currentUV;
-				const char * uvName = nullptr;
+			
 				bool boolVal;
 				meshData->GetPolygonVertexUV(i, j, uvName, currentUV, boolVal);
 				RmeshCollection.verts[uvIndex].U = static_cast<float>(currentUV[0]);

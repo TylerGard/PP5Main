@@ -90,22 +90,13 @@ void WindowClass::start(HWND window, int width, int height) {
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	deviceContext->RSSetViewports(1, &viewport);
-
+	DirectX::CreateWICTextureFromFile(device, deviceContext, L"Mage_D.png", NULL, &mageShaderResourceView);
+	DirectX::CreateWICTextureFromFile(device, deviceContext, L"Teddy_D.png", NULL, &teddyShaderResourceView);
 	
 	for (int j = 0; j < 2; j++)
 	{
 
-		if (j == 0)
-		{
-			//CreateDDSTextureFromFile(device, L"mageTexture.dds", (ID3D11Resource**)mageTexture2D, &mageShaderResourceView);
 		
-
-		}
-		else
-		{
-			
-			//CreateDDSTextureFromFile(device, L"teddyTexture.dds", (ID3D11Resource**)teddyTexture2D, &teddyShaderResourceView);
-		}
 		//pipelineState
 		pipeline_state_t * pipelineState = new pipeline_state_t();
 
@@ -527,12 +518,18 @@ void WindowClass::Render() {
 	{
 		pipeline_state_t * pipelineState = pipelineStates[j];
 
-
-
-
 		deviceContext->ClearDepthStencilView(pipelineState->depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		deviceContext->ClearRenderTargetView(renderTargetView, DirectX::Colors::Black);
+	
+		deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+
+		
+	}
+	for (int j = 0; j < pipelineStates.size(); j++)
+	{
+		pipeline_state_t * pipelineState = pipelineStates[j];
 		if (j == 0) {
+
 			*views = mageShaderResourceView;
 			deviceContext->PSSetShaderResources(0, 1, views);
 
@@ -542,11 +539,11 @@ void WindowClass::Render() {
 			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 			samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 			HRESULT result = device->CreateSamplerState(&samplerDesc, &mageSampler);
-			DirectX::CreateWICTextureFromFile(device, deviceContext, L"mageTexture.dds", NULL, &mageShaderResourceView);
 			deviceContext->PSSetSamplers(0, 1, &mageSampler);
-			
+
 		}
 		else {
+
 			*views = teddyShaderResourceView;
 			deviceContext->PSSetShaderResources(0, 1, views);
 
@@ -556,21 +553,13 @@ void WindowClass::Render() {
 			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 			samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 			HRESULT result = device->CreateSamplerState(&samplerDesc, &teddySampler);
-			DirectX::CreateWICTextureFromFile(device, deviceContext, L"teddyTexture.dds", NULL, &teddyShaderResourceView);
+
 			deviceContext->PSSetSamplers(0, 1, &teddySampler);
 		}
 
-		//deviceContext->PSSetShader(pipelineState->pixel_shader, NULL, 0);
-		//deviceContext->VSSetShader(pipelineState->vertex_shader, NULL, 0);
+		deviceContext->PSSetShader(pipelineState->pixel_shader, NULL, 0);
+		deviceContext->VSSetShader(pipelineState->vertex_shader, NULL, 0);
 		deviceContext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
-		deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
-
-		
-	}
-	for (int j = 0; j < pipelineStates.size(); j++)
-	{
-		pipeline_state_t * pipelineState = pipelineStates[j];
-
 		if (GetAsyncKeyState(VK_SPACE))
 		{
 			XMMATRIX model = XMLoadFloat4x4(&constantBufferData.model);

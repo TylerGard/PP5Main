@@ -1,17 +1,2 @@
-﻿  WinMain.cpp
-c:\program files (x86)\microsoft directx sdk (june 2010)\include\d3d11.h(917): warning C4005: 'D3D11_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS': macro redefinition
-  c:\program files (x86)\windows kits\8.1\include\shared\winerror.h(50469): note: see previous definition of 'D3D11_ERROR_TOO_MANY_UNIQUE_STATE_OBJECTS'
-c:\program files (x86)\microsoft directx sdk (june 2010)\include\d3d11.h(918): warning C4005: 'D3D11_ERROR_FILE_NOT_FOUND': macro redefinition
-  c:\program files (x86)\windows kits\8.1\include\shared\winerror.h(50478): note: see previous definition of 'D3D11_ERROR_FILE_NOT_FOUND'
-c:\program files (x86)\microsoft directx sdk (june 2010)\include\d3d11.h(919): warning C4005: 'D3D11_ERROR_TOO_MANY_UNIQUE_VIEW_OBJECTS': macro redefinition
-  c:\program files (x86)\windows kits\8.1\include\shared\winerror.h(50488): note: see previous definition of 'D3D11_ERROR_TOO_MANY_UNIQUE_VIEW_OBJECTS'
-c:\program files (x86)\microsoft directx sdk (june 2010)\include\d3d11.h(920): warning C4005: 'D3D11_ERROR_DEFERRED_CONTEXT_MAP_WITHOUT_INITIAL_DISCARD': macro redefinition
-  c:\program files (x86)\windows kits\8.1\include\shared\winerror.h(50497): note: see previous definition of 'D3D11_ERROR_DEFERRED_CONTEXT_MAP_WITHOUT_INITIAL_DISCARD'
-e:\!!!engine dev\pp5\enginewindowsetup\winmain.cpp(349): warning C4018: '<': signed/unsigned mismatch
-e:\!!!engine dev\pp5\enginewindowsetup\winmain.cpp(361): warning C4018: '<': signed/unsigned mismatch
-e:\!!!engine dev\pp5\enginewindowsetup\winmain.cpp(496): warning C4018: '<': signed/unsigned mismatch
-e:\!!!engine dev\pp5\enginewindowsetup\winmain.cpp(526): warning C4018: '<': signed/unsigned mismatch
-e:\!!!engine dev\pp5\enginewindowsetup\winmain.cpp(570): warning C4018: '<': signed/unsigned mismatch
-e:\!!!engine dev\pp5\enginewindowsetup\winmain.cpp(649): warning C4305: '=': truncation from 'double' to 'float'
-e:\!!!engine dev\pp5\enginewindowsetup\winmain.cpp(651): warning C4305: '=': truncation from 'double' to 'float'
+﻿  compilation object save succeeded; see E:\!!!ENGINE DEV\PP5\EngineWindowSetup\Trivial_PS.cso
   EngineWindowSetup.vcxproj -> E:\!!!ENGINE DEV\PP5\EngineWindowSetup\Debug\EngineWindowSetup.exe
