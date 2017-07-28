@@ -6,6 +6,7 @@
 #include <DirectXMath.h>
 #include <vector>
 
+
 using namespace DirectX;
 
 struct pipeline_state_t {
@@ -38,8 +39,14 @@ struct ModelViewProjectionConstantBuffer {
 struct VertexPosColor {
 	XMFLOAT3 Position;
 	XMFLOAT4 Color;
-};
 
+};
+struct winMeshStruct
+{
+	std::vector<VertexPosColor> vertices;
+	std::vector<int> index;
+	std::vector<std::vector<VertexPosColor>> boneVertices;
+};
 class WindowClass {
 	std::vector<VertexPosColor> linesVector;
 	HWND hWND;
@@ -56,6 +63,13 @@ class WindowClass {
 	D3D_FEATURE_LEVEL featureLevel;
 	D3D11_VIEWPORT viewport;
 	bool debugWires;
+	ID3D11ShaderResourceView * teddyShaderResourceView;
+	ID3D11ShaderResourceView * mageShaderResourceView;
+	ID3D11Texture2D * teddyTexture2D;
+	ID3D11Texture2D * mageTexture2D;
+
+	ID3D11SamplerState * mageSampler;
+	ID3D11SamplerState * teddySampler;
 
 public:
 	void start(HWND wind, int width, int height);
@@ -63,14 +77,12 @@ public:
 	~WindowClass();
 	void Render();
 	void debugSwitch();
+	void Update(float & delta);
 	void UpdateMouse(float delta, float x, float y);
 	//std::vector<VertexPosColor >vertices;
 	//std::vector<int> index;
 	//std::vector<VertexPosColor> boneVertices;
-
-	std::vector<std::vector<VertexPosColor> >vertices;
-	std::vector<std::vector<int>> index;
-	std::vector<std::vector<VertexPosColor>> boneVertices;
+	std::vector<winMeshStruct> Meshes;
 	void addToBuffer(VertexPosColor VPC);
 	void clearBuffer();
 	

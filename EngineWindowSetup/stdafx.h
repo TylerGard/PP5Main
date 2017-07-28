@@ -17,7 +17,7 @@
 #include <memory.h>
 #include <tchar.h>
 
-
+#include "D2D1.h"
 #include <iostream>
 #include <stdio.h>
 #include <stdint.h>

@@ -23,7 +23,7 @@ VOut main(float4 position : POSITION, float4 color : COLOR)
 
 	// Pass the color through without modification.
 	output.color = color;
-	//output.uv = input.uv;
+	//output.uv = input.;
 	//output.norm = input.norm;
 
 	return output;

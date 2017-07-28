@@ -31,12 +31,15 @@ struct meshStruct {
 struct vertex {
 	float position[4];
 	float color[4];
+	float U;
+	float V;
 };
 
 struct meshCollection {
 	std::vector<vertex> verts;
 	std::vector<int> indices;
-	std::vector<xyzw> boneVerticesX;
+	std::vector<std::vector<xyzw>> boneVerticesX;
+	//std::vector<xyzw > boneVerticesX;
 };
 
 namespace fbxNS {

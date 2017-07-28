@@ -8,7 +8,9 @@ struct fbxJoint {
 	FbxNode *node;
 	int parent_index = -1;
 };
-std::vector<fbxJoint> jointVector;
+
+
+//std::vector<fbxJoint> jointVector;
 
 
 
@@ -93,11 +95,20 @@ namespace fbxNS
 			RmeshCollection.verts.push_back(temp);
 		}
 
+		
+
 		int polygonNum = meshData->GetPolygonCount();
 
 		for (int i = 0; i < polygonNum; i++) {
 			for (int j = 0; j < 3; j++) {
 				RmeshCollection.indices.push_back(meshData->GetPolygonVertex(i, j));
+				int uvIndex = meshData->GetPolygonVertex(i, j);
+				FbxVector2 currentUV;
+				const char * uvName = nullptr;
+				bool boolVal;
+				meshData->GetPolygonVertexUV(i, j, uvName, currentUV, boolVal);
+				RmeshCollection.verts[uvIndex].U = static_cast<float>(currentUV[0]);
+				RmeshCollection.verts[uvIndex].V = static_cast<float>(currentUV[1]);
 			}
 		}
 	}
@@ -170,7 +181,7 @@ namespace fbxNS
 	* and prints its contents in an xml format to stdout.
 	*/
 	void fbxFunctions::ProcessStuff(meshCollection & theCollection, float scalevalue) {
-		
+		std::vector<fbxJoint> jointVector;
 		int poseCount = lScene->GetPoseCount();
 		FbxPose *posePointer;
 		for (int i = 0; i < poseCount; i++)
@@ -235,8 +246,8 @@ namespace fbxNS
 		}
 		jointVector = tempVector;
 
-
-		for (int i = 0; i < jointVector.size(); i++) {
+		std::vector<xyzw> someXYZW;
+		/*for (int i = 0; i < jointVector.size(); i++) {
 			FbxMatrix jointMatrix = jointVector[i].node->EvaluateGlobalTransform();
 			regJoint mainJoint;
 			auto matrix = jointVector[i].node->EvaluateGlobalTransform(0);
@@ -268,11 +279,69 @@ namespace fbxNS
 
 			lMesh = &tMesh;
 
+			someXYZW.push_back(mainJoint.jXYZW);
 			theCollection.boneVerticesX.push_back(mainJoint.jXYZW);
 		}
+		theCollection.boneVerticesX.push_back(someXYZW);*/
 		
-		//boneIndices.push_back()
+
+		// Starting to grab animation data
+
+		FbxAnimStack * animStack = lScene->GetCurrentAnimationStack();
+		FbxTimeSpan timeSpan = animStack->GetLocalTimeSpan();
+		FbxTime dur = timeSpan.GetDuration();
+		FbxLong frameCount = dur.GetFrameCount(FbxTime::EMode::eFrames24);
+
+
+
+		for (int i = 1; i < frameCount; i++) {
+			FbxTime keyTime;
+			keyTime.SetFrame(i, dur.eFrames24);
+			std::vector<xyzw> someOtherXYZW;
+			for (int j = 0; j < jointVector.size(); j++) {
+				//FbxMatrix jointMatrix = jointVector[j].node->EvaluateGlobalTransform(keyTime);
+			
+				regJoint mainJoint;
+				auto matrix = jointVector[j].node->EvaluateGlobalTransform(keyTime);//jointVector[i].node->EvaluateGlobalTransform(0);
+				auto pos = matrix.GetT();
+
+				mainJoint.jXYZW.x = (float)pos.mData[0];
+				mainJoint.jXYZW.y = (float)pos.mData[1];
+				mainJoint.jXYZW.z = (float)pos.mData[2];
+				mainJoint.jXYZW.w = (float)pos.mData[3];
+
+				mainJoint.jMatrix.e00 = (float)matrix.Get(0, 0);
+				mainJoint.jMatrix.e01 = (float)matrix.Get(0, 1);
+				mainJoint.jMatrix.e02 = (float)matrix.Get(0, 2);
+				mainJoint.jMatrix.e03 = (float)matrix.Get(0, 3);
+				mainJoint.jMatrix.e10 = (float)matrix.Get(1, 0);
+				mainJoint.jMatrix.e11 = (float)matrix.Get(1, 1);
+				mainJoint.jMatrix.e12 = (float)matrix.Get(1, 2);
+				mainJoint.jMatrix.e13 = (float)matrix.Get(1, 3);
+				mainJoint.jMatrix.e20 = (float)matrix.Get(2, 0);
+				mainJoint.jMatrix.e21 = (float)matrix.Get(2, 1);
+				mainJoint.jMatrix.e22 = (float)matrix.Get(2, 2);
+				mainJoint.jMatrix.e23 = (float)matrix.Get(2, 3);
+				mainJoint.jMatrix.e30 = (float)matrix.Get(3, 0);
+				mainJoint.jMatrix.e31 = (float)matrix.Get(3, 1);
+				mainJoint.jMatrix.e32 = (float)matrix.Get(3, 2);
+				mainJoint.jMatrix.e33 = (float)matrix.Get(3, 3);
+
+				tMesh.jointVec.push_back(mainJoint);
+
+				lMesh = &tMesh;
+
+				someOtherXYZW.push_back(mainJoint.jXYZW);
+				//theCollection.boneVerticesX.push_back(mainJoint.jXYZW);
+			}
+			theCollection.boneVerticesX.push_back(someOtherXYZW);
+			
+
+		}
+		//jointVector.clear();
 	}
+
+	
 
 	meshStruct* fbxFunctions::getMesh() {
 		return lMesh;

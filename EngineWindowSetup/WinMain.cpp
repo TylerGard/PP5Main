@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "WICTextureLoader.h"
 #include "WinMain.h"
 
 using namespace DirectX;
@@ -90,10 +91,21 @@ void WindowClass::start(HWND window, int width, int height) {
 	viewport.TopLeftY = 0;
 	deviceContext->RSSetViewports(1, &viewport);
 
+	
 	for (int j = 0; j < 2; j++)
 	{
 
+		if (j == 0)
+		{
+			//CreateDDSTextureFromFile(device, L"mageTexture.dds", (ID3D11Resource**)mageTexture2D, &mageShaderResourceView);
+		
 
+		}
+		else
+		{
+			
+			//CreateDDSTextureFromFile(device, L"teddyTexture.dds", (ID3D11Resource**)teddyTexture2D, &teddyShaderResourceView);
+		}
 		//pipelineState
 		pipeline_state_t * pipelineState = new pipeline_state_t();
 
@@ -173,7 +185,7 @@ void WindowClass::start(HWND window, int width, int height) {
 		D3D11_BUFFER_DESC bufferDesc;
 		ZeroMemory(&bufferDesc, sizeof(bufferDesc));
 		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		bufferDesc.ByteWidth = sizeof(VertexPosColor) * vertices[j].size();
+		bufferDesc.ByteWidth = sizeof(VertexPosColor) * Meshes[j].vertices.size();
 		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
@@ -186,26 +198,26 @@ void WindowClass::start(HWND window, int width, int height) {
 		//deviceContext->Unmap(pipelineState->buffer, NULL);
 
 		D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
-		vertexBufferData.pSysMem = &vertices[j][0];
+		vertexBufferData.pSysMem = &Meshes[j].vertices[0];
 		vertexBufferData.SysMemPitch = 0;
 		vertexBufferData.SysMemSlicePitch = 0;
 
-		CD3D11_BUFFER_DESC bufferDescVector(sizeof(VertexPosColor)*vertices[j].size(), D3D11_BIND_VERTEX_BUFFER);
+		CD3D11_BUFFER_DESC bufferDescVector(sizeof(VertexPosColor)*Meshes[j].vertices.size(), D3D11_BIND_VERTEX_BUFFER);
 		device->CreateBuffer(&bufferDescVector, &vertexBufferData, &pipelineState->buffer);
 		D3D11_BUFFER_DESC bufferDescIndices;
 		ZeroMemory(&bufferDescIndices, sizeof(bufferDescIndices));
 		bufferDescIndices.Usage = D3D11_USAGE_DYNAMIC;
-		bufferDescIndices.ByteWidth = sizeof(int)*index[j].size();
+		bufferDescIndices.ByteWidth = sizeof(int)*Meshes[j].index.size();
 		bufferDescIndices.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		bufferDescIndices.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
 		device->CreateBuffer(&bufferDescIndices, NULL, &pipelineState->indexBuffer);
 
 		D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
-		indexBufferData.pSysMem = &index[j][0];
+		indexBufferData.pSysMem = & Meshes[j].index[0];
 		indexBufferData.SysMemPitch = 0;
 		indexBufferData.SysMemSlicePitch = 0;
-		CD3D11_BUFFER_DESC bufferDescriptionIndex(sizeof(int)*index[j].size(), D3D11_BIND_INDEX_BUFFER);
+		CD3D11_BUFFER_DESC bufferDescriptionIndex(sizeof(int)*Meshes[j].index.size(), D3D11_BIND_INDEX_BUFFER);
 		device->CreateBuffer(&bufferDescriptionIndex, &indexBufferData, &pipelineState->indexBuffer);
 
 
@@ -214,7 +226,7 @@ void WindowClass::start(HWND window, int width, int height) {
 		D3D11_BUFFER_DESC boneBufferDesc;
 		ZeroMemory(&boneBufferDesc, sizeof(boneBufferDesc));
 		boneBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-		boneBufferDesc.ByteWidth = sizeof(VertexPosColor) * boneVertices[j].size();
+		boneBufferDesc.ByteWidth = sizeof(VertexPosColor) * Meshes[j].boneVertices[0].size();
 		boneBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		boneBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
@@ -227,16 +239,16 @@ void WindowClass::start(HWND window, int width, int height) {
 		//deviceContext->Unmap(pipelineState->buffer, NULL);
 
 		D3D11_SUBRESOURCE_DATA boneVertexBufferData = { 0 };
-		boneVertexBufferData.pSysMem = &boneVertices[j][0];
+		boneVertexBufferData.pSysMem = &Meshes[j].boneVertices[0][0];
 		boneVertexBufferData.SysMemPitch = 0;
 		boneVertexBufferData.SysMemSlicePitch = 0;
 
-		CD3D11_BUFFER_DESC boneBufferDescVector(sizeof(VertexPosColor)*boneVertices[j].size(), D3D11_BIND_VERTEX_BUFFER);
+		CD3D11_BUFFER_DESC boneBufferDescVector(sizeof(VertexPosColor)*Meshes[j].boneVertices[0].size(), D3D11_BIND_VERTEX_BUFFER);
 		device->CreateBuffer(&boneBufferDescVector, &boneVertexBufferData, &pipelineState->boneVertexBuffer);
 		D3D11_BUFFER_DESC boneBufferDescIndices;
 		ZeroMemory(&boneBufferDescIndices, sizeof(boneBufferDescIndices));
 		boneBufferDescIndices.Usage = D3D11_USAGE_DYNAMIC;
-		boneBufferDescIndices.ByteWidth = sizeof(int)*index.size();
+		boneBufferDescIndices.ByteWidth = sizeof(int)*Meshes.size();
 		boneBufferDescIndices.BindFlags = D3D11_BIND_INDEX_BUFFER;
 		boneBufferDescIndices.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
@@ -321,7 +333,162 @@ void WindowClass::start(HWND window, int width, int height) {
 		pipelineStates.push_back(pipelineState);
 	}
 }
+void WindowClass::Update(float & delta)
+{
+	if (delta < 100)
+		return;
+	delta = 0;
+	static int TeddyFrameNumber = 1;
+	static int MageFrameNumber = 1;
+	for (int j = 0; j < 2; j++)
+	{
+		int frameNumber;
+		if (j == 0 )//mage
+		{
+			frameNumber = MageFrameNumber;
+			if (MageFrameNumber + 1 < Meshes[j].boneVertices.size())
+			{
+				MageFrameNumber++;
+			}
+			else
+			{
+				MageFrameNumber = 0;
+			}
+		}
+		else
+		{
+			frameNumber = TeddyFrameNumber;
+			if (TeddyFrameNumber + 1 < Meshes[j].boneVertices.size())
+			{
+				TeddyFrameNumber++;
+			}
+			else
+			{
+				TeddyFrameNumber = 0;
+			}
+		}
 
+
+		//pipelineState
+		pipeline_state_t * pipelineState = pipelineStates[j];
+
+		//debug stuff
+		D3D11_RASTERIZER_DESC rastDesc = CD3D11_RASTERIZER_DESC(CD3D11_DEFAULT());
+
+		rastDesc.FillMode = D3D11_FILL_SOLID;
+		rastDesc.CullMode = D3D11_CULL_BACK;
+		device->CreateRasterizerState(&rastDesc, &(pipelineState->rasterState));
+
+
+		rastDesc.FillMode = D3D11_FILL_WIREFRAME;
+		rastDesc.CullMode = D3D11_CULL_NONE;
+		device->CreateRasterizerState(&rastDesc, &(pipelineState->debugRasterState));
+
+		//pixel shader
+		char *pixelData;
+		long pixelSize;
+		readFile("Trivial_PS.cso", pixelData, pixelSize);
+		device->CreatePixelShader(pixelData, pixelSize, NULL, &pipelineState->pixel_shader);
+		free(pixelData);
+
+		//vertex shader
+		char *vertexData;
+		long vertexSize;
+		readFile("Trivial_VS.cso", vertexData, vertexSize);
+		device->CreateVertexShader(vertexData, vertexSize, NULL, &pipelineState->vertex_shader);
+
+		D3D11_INPUT_ELEMENT_DESC inputElementDesc[] = {
+			{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		};
+
+		device->CreateInputLayout(inputElementDesc, 2, vertexData, vertexSize, &pipelineState->input_layout);
+		free(vertexData);
+
+		deviceContext->IASetInputLayout(pipelineState->input_layout);
+	
+	
+		//D3D11_MAPPED_SUBRESOURCE mappedSubresource;
+		//deviceContext->Map(pipelineState->buffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &mappedSubresource);
+		//memcpy(mappedSubresource.pData, vertexes, sizeof(vertexes));
+		//deviceContext->Unmap(pipelineState->buffer, NULL);
+
+		//for (int i = 0; i < pipelineState->buffer.size(); i++) {
+		D3D11_BUFFER_DESC bufferDesc;
+		ZeroMemory(&bufferDesc, sizeof(bufferDesc));
+		bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		bufferDesc.ByteWidth = sizeof(VertexPosColor) * Meshes[j].vertices.size();
+		bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		device->CreateBuffer(&bufferDesc, NULL, &(pipelineState->buffer));
+
+
+		//D3D11_MAPPED_SUBRESOURCE mappedSubresource;
+		//deviceContext->Map(pipelineState->buffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &mappedSubresource);
+		//memcpy(mappedSubresource.pData, vertexes, sizeof(vertexes));
+		//deviceContext->Unmap(pipelineState->buffer, NULL);
+
+		D3D11_SUBRESOURCE_DATA vertexBufferData = { 0 };
+		vertexBufferData.pSysMem = &Meshes[j].vertices[0];
+		vertexBufferData.SysMemPitch = 0;
+		vertexBufferData.SysMemSlicePitch = 0;
+
+		CD3D11_BUFFER_DESC bufferDescVector(sizeof(VertexPosColor)*Meshes[j].vertices.size(), D3D11_BIND_VERTEX_BUFFER);
+		device->CreateBuffer(&bufferDescVector, &vertexBufferData, &pipelineState->buffer);
+		D3D11_BUFFER_DESC bufferDescIndices;
+		ZeroMemory(&bufferDescIndices, sizeof(bufferDescIndices));
+		bufferDescIndices.Usage = D3D11_USAGE_DYNAMIC;
+		bufferDescIndices.ByteWidth = sizeof(int)*Meshes[j].index.size();
+		bufferDescIndices.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		bufferDescIndices.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		device->CreateBuffer(&bufferDescIndices, NULL, &pipelineState->indexBuffer);
+
+		D3D11_SUBRESOURCE_DATA indexBufferData = { 0 };
+		indexBufferData.pSysMem = &Meshes[j].index[0];
+		indexBufferData.SysMemPitch = 0;
+		indexBufferData.SysMemSlicePitch = 0;
+		CD3D11_BUFFER_DESC bufferDescriptionIndex(sizeof(int)*Meshes[j].index.size(), D3D11_BIND_INDEX_BUFFER);
+		device->CreateBuffer(&bufferDescriptionIndex, &indexBufferData, &pipelineState->indexBuffer);
+
+
+		//Start Bone////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		D3D11_BUFFER_DESC boneBufferDesc;
+		ZeroMemory(&boneBufferDesc, sizeof(boneBufferDesc));
+		boneBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+		boneBufferDesc.ByteWidth = sizeof(VertexPosColor) * Meshes[j].boneVertices[frameNumber].size();
+		boneBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		boneBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		device->CreateBuffer(&boneBufferDesc, NULL, &(pipelineState->boneVertexBuffer));
+
+
+		//D3D11_MAPPED_SUBRESOURCE mappedSubresource;
+		//deviceContext->Map(pipelineState->buffer, NULL, D3D11_MAP_WRITE_DISCARD, NULL, &mappedSubresource);
+		//memcpy(mappedSubresource.pData, vertexes, sizeof(vertexes));
+		//deviceContext->Unmap(pipelineState->buffer, NULL);
+
+		D3D11_SUBRESOURCE_DATA boneVertexBufferData = { 0 };
+		boneVertexBufferData.pSysMem = &Meshes[j].boneVertices[frameNumber][0];// Meshes[j].boneVertices[frameNumber].data()
+		boneVertexBufferData.SysMemPitch = 0;
+		boneVertexBufferData.SysMemSlicePitch = 0;
+
+		CD3D11_BUFFER_DESC boneBufferDescVector(sizeof(VertexPosColor)*Meshes[j].boneVertices[frameNumber].size(), D3D11_BIND_VERTEX_BUFFER);
+		device->CreateBuffer(&boneBufferDescVector, &boneVertexBufferData, &pipelineState->boneVertexBuffer);
+		D3D11_BUFFER_DESC boneBufferDescIndices;
+		ZeroMemory(&boneBufferDescIndices, sizeof(boneBufferDescIndices));
+		boneBufferDescIndices.Usage = D3D11_USAGE_DYNAMIC;
+		boneBufferDescIndices.ByteWidth = sizeof(int)*Meshes.size();
+		boneBufferDescIndices.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		boneBufferDescIndices.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+
+
+	}
+
+}
 #define ReleaseIfExists(x) if(x) x->Release()
 
 WindowClass::~WindowClass() {
@@ -354,16 +521,51 @@ WindowClass::~WindowClass() {
 void WindowClass::Render() {
 	if (GetActiveWindow() != hWND)
 		return;
+	ID3D11ShaderResourceView * views[] = { nullptr };
+	D3D11_SAMPLER_DESC samplerDesc;
 	for (int j = 0; j < pipelineStates.size(); j++)
 	{
 		pipeline_state_t * pipelineState = pipelineStates[j];
 
+
+
+
 		deviceContext->ClearDepthStencilView(pipelineState->depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 		deviceContext->ClearRenderTargetView(renderTargetView, DirectX::Colors::Black);
-		deviceContext->PSSetShader(pipelineState->pixel_shader, NULL, 0);
-		deviceContext->VSSetShader(pipelineState->vertex_shader, NULL, 0);
+		if (j == 0) {
+			*views = mageShaderResourceView;
+			deviceContext->PSSetShaderResources(0, 1, views);
+
+			ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
+			samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+			samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+			HRESULT result = device->CreateSamplerState(&samplerDesc, &mageSampler);
+			DirectX::CreateWICTextureFromFile(device, deviceContext, L"mageTexture.dds", NULL, &mageShaderResourceView);
+			deviceContext->PSSetSamplers(0, 1, &mageSampler);
+			
+		}
+		else {
+			*views = teddyShaderResourceView;
+			deviceContext->PSSetShaderResources(0, 1, views);
+
+			ZeroMemory(&samplerDesc, sizeof(D3D11_SAMPLER_DESC));
+			samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+			samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+			samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+			samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+			HRESULT result = device->CreateSamplerState(&samplerDesc, &teddySampler);
+			DirectX::CreateWICTextureFromFile(device, deviceContext, L"teddyTexture.dds", NULL, &teddyShaderResourceView);
+			deviceContext->PSSetSamplers(0, 1, &teddySampler);
+		}
+
+		//deviceContext->PSSetShader(pipelineState->pixel_shader, NULL, 0);
+		//deviceContext->VSSetShader(pipelineState->vertex_shader, NULL, 0);
 		deviceContext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
 		deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);
+
+		
 	}
 	for (int j = 0; j < pipelineStates.size(); j++)
 	{
@@ -401,12 +603,14 @@ void WindowClass::Render() {
 		deviceContext->IASetVertexBuffers(0, 1, &pipelineState->buffer, &stride, &offset);
 		deviceContext->IASetIndexBuffer(pipelineState->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		deviceContext->DrawIndexed(index[j].size(), 0, 0);
+
+		
+		deviceContext->DrawIndexed(Meshes[j].index.size(), 0, 0);
 
 		deviceContext->IASetVertexBuffers(0, 1, &pipelineState->groundBuffer, &stride, &offset);
 		//deviceContext->IASetIndexBuffer(pipelineState->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		deviceContext->Draw(index[j].size(), 0);
+		deviceContext->Draw(Meshes[j].index.size(), 0);
 
 		//deviceContext->IASetVertexBuffers(0, 1, &pipelineState->debugBuffer, &stride, &offset);
 		//deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
@@ -418,7 +622,7 @@ void WindowClass::Render() {
 		deviceContext->IASetVertexBuffers(0, 1, &pipelineState->boneVertexBuffer, &stride, &offset);
 		//deviceContext->IASetIndexBuffer(pipelineState->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 		deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
-		deviceContext->Draw(boneVertices[j].size(), 0);
+		deviceContext->Draw(Meshes[j].boneVertices[0].size(), 0);
 		//	}
 			/*deviceContext->UpdateSubresource(constantBuffer, 0, NULL, &constantBufferData, 0, 0);
 			deviceContext->VSSetConstantBuffers(0, 1, &constantBuffer);

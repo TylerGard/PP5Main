@@ -32,14 +32,15 @@ void FbxToDirectX() {
 	
 	for (int x = 0; x < fbxDLLAPI.getMeshCollection().size(); x++)
 	{
+		winMeshStruct tempMesh;
 		 meshCollection theCollection;
 		theCollection = fbxDLLAPI.getMeshCollection()[x];
 
 		std::vector<VertexPosColor> vertsVector;
-		std::vector<int> indiciesVector = theCollection.indices;
-		std::vector<VertexPosColor> boneVertsVector;
+		//std::vector<int> indiciesVector = theCollection.indices;
+		
 	
-		windowClass.index.push_back(indiciesVector);
+		tempMesh.index = theCollection.indices; 
 
 		
 		std::vector<extern vertex> vertexS = theCollection.verts;
@@ -49,54 +50,60 @@ void FbxToDirectX() {
 			temp.Position.y = vertexS[i].position[1];
 			temp.Position.z = vertexS[i].position[2];
 			//temp.Position.w = 1.0;
-			temp.Color.x = 0.2f;
-			temp.Color.y = 0.2f;
-			temp.Color.z = 0.5f;
+			temp.Color.x = vertexS[i].U;
+			temp.Color.y = vertexS[i].V;
+			temp.Color.z = 0.0f;
 			temp.Color.w = 1.0f;
 
-			vertsVector.push_back(temp);
-			
+		// vertsVector.push_back(temp);
+			tempMesh.vertices.push_back(temp);
 			
 		}
-		windowClass.vertices.push_back(vertsVector);
+	// vertices.push_back(vertsVector);
+	
 
+		std::vector< std::vector<xyzw>> mainVertexVector = theCollection.boneVerticesX;
+	
+		for (int j = 0; j < mainVertexVector.size(); j++) {
+			std::vector<VertexPosColor> boneVertsVector;
 
-		std::vector<xyzw> vertexST = theCollection.boneVerticesX;
-		for (int i = 0; i < theCollection.boneVerticesX.size(); i++) {
-			VertexPosColor temp;
-			temp.Position.x = vertexST[i].x;
-			temp.Position.y = vertexST[i].y;
-			temp.Position.z = vertexST[i].z;
-			//temp.Position.w = 1.0;
-			temp.Color.x = 1.0f;
-			temp.Color.y = 1.0f;
-			temp.Color.z = 1.0f;
-			temp.Color.w = 1.0f;
+			std::vector<xyzw> vertexST = theCollection.boneVerticesX[j];
+			for (int i = 0; i < theCollection.boneVerticesX[j].size(); i++) {
+				VertexPosColor temp;
+				temp.Position.x = vertexST[i].x;
+				temp.Position.y = vertexST[i].y;
+				temp.Position.z = vertexST[i].z;
+				//temp.Position.w = 1.0;
+				temp.Color.x = 1.0f;
+				temp.Color.y = 1.0f;
+				temp.Color.z = 1.0f;
+				temp.Color.w = 1.0f;
 
-			boneVertsVector.push_back(temp);
+				boneVertsVector.push_back(temp);
 
-			VertexPosColor tempX = temp;
-			tempX.Position.x += .1;
-			tempX.Color.y = 0.0f;
-			tempX.Color.z = 0.0f;
-			VertexPosColor tempY = temp;
-			tempY.Position.y += .1;
-			tempY.Color.x = 0.0f;
-			tempY.Color.z = 0.0f;
-			VertexPosColor tempZ = temp;
-			tempZ.Position.z += .1;
-			tempZ.Color.y = 0.0f;
-			tempZ.Color.x = 0.0f;
+				VertexPosColor tempX = temp;
+				tempX.Position.x += .1;
+				tempX.Color.y = 0.0f;
+				tempX.Color.z = 0.0f;
+				VertexPosColor tempY = temp;
+				tempY.Position.y += .1;
+				tempY.Color.x = 0.0f;
+				tempY.Color.z = 0.0f;
+				VertexPosColor tempZ = temp;
+				tempZ.Position.z += .1;
+				tempZ.Color.y = 0.0f;
+				tempZ.Color.x = 0.0f;
 
-			boneVertsVector.push_back(tempX);
-			boneVertsVector.push_back(temp);
-			boneVertsVector.push_back(tempY);
-			boneVertsVector.push_back(temp);
-			boneVertsVector.push_back(tempZ);
-			boneVertsVector.push_back(temp);
+				boneVertsVector.push_back(tempX);
+				boneVertsVector.push_back(temp);
+				boneVertsVector.push_back(tempY);
+				boneVertsVector.push_back(temp);
+				boneVertsVector.push_back(tempZ);
+				boneVertsVector.push_back(temp);
+			}
+			tempMesh.boneVertices.push_back(boneVertsVector);
 		}
-
-		windowClass.boneVertices.push_back(boneVertsVector);
+		windowClass.Meshes.push_back(tempMesh);
 	}
 }
 
@@ -140,6 +147,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	// Main message loop:
 	bool run = true;
+	float dtime = 1;
 	while (run)
 	{
 		deltaTime = (float)(std::chrono::system_clock::now() - lastnow).count() / 1e7f;
@@ -188,6 +196,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 			windowClass.addLine(vertThne, vertFne);
 		}
 
+		windowClass.Update(++dtime);
 		windowClass.Render();
 		windowClass.clearDebugBuffer();
 	}
